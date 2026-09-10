@@ -12,6 +12,10 @@ pd.options.mode.chained_assignment = None
 def transformaParaDf(ativTrabalho, columns) -> pd.DataFrame:
     ativTrabalhoDf = pd.DataFrame(ativTrabalho, columns=columns)
 
+    ativTrabalhoDf["Data"] = ativTrabalhoDf["Data"].astype(object)
+    ativTrabalhoDf["HoraInicio"] = ativTrabalhoDf["HoraInicio"].astype(object)
+    ativTrabalhoDf["HoraFim"] = ativTrabalhoDf["HoraFim"].astype(object)
+
     for cont, data in enumerate(ativTrabalhoDf["Data"]):
         if len(data) == 0:
             ativTrabalhoDf.iloc[cont, 0] = datetime(1970, 1, 1)
