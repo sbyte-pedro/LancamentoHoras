@@ -55,7 +55,7 @@ def main(request: HttpRequest) -> HttpResponse:
             response = HttpResponse(content_type="application/ms-excel")
 
             today = datetime.now()
-            responseContent = f"attachment; filename = AtividadeIntegracoes{today.hour}{today.minute}{today.hour} {today.day}-{today.month}-{today.year}.xlsx"
+            responseContent = f"attachment; filename = AtividadeIntegracoes{today.hour}{today.minute}{today.second} {today.day}-{today.month}-{today.year}.xlsx"
 
             response["Content-Disposition"] = responseContent
 
@@ -86,6 +86,7 @@ def logout_view(request):
     return redirect("login")
 
 
+@login_required
 def api_get_data_view(request):
     dataInicio = (
         request.GET.get("dataInicio")

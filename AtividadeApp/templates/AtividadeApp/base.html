@@ -20,19 +20,5 @@
             </div>
         </div>
     </div>
-    <script>
-        $('#btn_analyze').click(function(e) {
-            e.preventDefault()
-            $.post('/api/v1/analyzer/',
-                data,
-                "json").done(function(response) {
-                //...
-            }).fail(function() {
-                Logger.error(" Error ")
-            })
-        
-            return false
-        }) // analyze click
-    </script>
 </body>
 </html>

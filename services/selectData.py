@@ -1,10 +1,14 @@
+import os
 from datetime import datetime
 import pymysql
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def selectDataFromDatabase(
     dataInicio: str = "20230101",
-    dataFim: str = "202301s01",
+    dataFim: str = "20230101",
     minCodColaborador: int | None = 0,
     maxCodColaborador: int | None = 99,
     nomeCliente: int | None = 0,
@@ -19,7 +23,10 @@ def selectDataFromDatabase(
         f"PARAMETROS: {dataInicio,dataFim,minCodColaborador,maxCodColaborador,nomeCliente, fimNomeCliente,atividade, fimAtividade, centroCusto, fimCentroCusto}"
     )
     connection = pymysql.connect(
-        host="10.1.1.108", user="root", password="Ledzep0001", database="back_office"
+        host=os.environ["DB_HOST"],
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        database=os.environ.get("DB_NAME", "back_office"),
     )
     with connection:
         with connection.cursor() as cursor:
@@ -109,7 +116,7 @@ def selectDataFromDatabase(
             )
 
     print(
-        f"Tempo demorado para pegar {len(ativTrabalho)} registros do banco de dados: {inicio - datetime.now()}"
+        f"Tempo demorado para pegar {len(ativTrabalho)} registros do banco de dados: {datetime.now() - inicio}"
     )
 
     return ativTrabalho, columns
