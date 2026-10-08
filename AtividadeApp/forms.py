@@ -1,4 +1,3 @@
-from datetime import datetime
 from django import forms
 
 
@@ -8,22 +7,22 @@ class DateInput(forms.DateInput):
 
 class FiltrosForm(forms.Form):
     dataInicio = forms.DateField(
-        widget=DateInput, label="Data Início", 
+        widget=DateInput, label="Data Início",
     )
     dataFim = forms.DateField(
         widget=DateInput, label="Data Fim",
     )
 
     minCodColaborador = forms.IntegerField(
-        label="Codigo Colaborador", initial=0, required=False
+        label="Colaborador (De)", initial=0, required=False
     )
-    maxCodColaborador = forms.IntegerField(label="Código Colaborador", initial=99)
+    maxCodColaborador = forms.IntegerField(label="Colaborador (Até)", initial=99)
 
-    minCliente = forms.CharField(label="Código Cliente", required=False)
-    maxCliente = forms.CharField(label="Código Cliente", initial="ZZZZZZZZZZZZZZZ")
+    minCliente = forms.CharField(label="Cliente (De)", required=False)
+    maxCliente = forms.CharField(label="Cliente (Até)", initial="ZZZZZZZZZZZZZZZ")
 
-    minAtividade = forms.CharField(label="Atividade", required=False)
-    maxAtividade = forms.CharField(label="Atividade", initial="ZZZZZZZZZZZZZZZ")
+    minAtividade = forms.CharField(label="Atividade (De)", required=False)
+    maxAtividade = forms.CharField(label="Atividade (Até)", initial="ZZZZZZZZZZZZZZZ")
 
-    minCentroCusto = forms.CharField(label="Centro Custo", required=False)
-    maxCentroCusto = forms.CharField(label="Centro Custo", initial="ZZZZZZZZZZZZZZZ")
+    minCentroCusto = forms.CharField(label="Centro Custo (De)", required=False)
+    maxCentroCusto = forms.CharField(label="Centro Custo (Até)", initial="ZZZZZZZZZZZZZZZ")

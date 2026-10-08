@@ -3,7 +3,6 @@ from services.defToExcel import transformaParaDf
 from datetime import date
 from services.utils import passarParaDecimal
 import pandas as pd
-from openpyxl.utils.dataframe import dataframe_to_rows
 
 
 def gerarDict(
@@ -93,14 +92,14 @@ def gerarDict(
             ["Data", "Qtde Horas", "Qtde Horas Decimal", "Descricao", "Colaborador"]
         ]
 
-        for ativ in dataframe_to_rows(atividadeTrabalho, index=False, header=False):
+        for _, row in atividadeTrabalho.iterrows():
             dictAtividade["registros"].append(
                 {
-                    "data": ativ[0],
-                    "qtde_horas": ativ[1],
-                    "qtde_horas_decimal": ativ[2],
-                    "descricao": ativ[3],
-                    "colaborador": ativ[4],
+                    "data": row["Data"],
+                    "qtde_horas": row["Qtde Horas"],
+                    "qtde_horas_decimal": row["Qtde Horas Decimal"],
+                    "descricao": row["Descricao"],
+                    "colaborador": row["Colaborador"],
                 }
             )
         dictFinal["atividades"].append(dictAtividade)

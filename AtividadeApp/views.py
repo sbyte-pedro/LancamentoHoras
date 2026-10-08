@@ -1,25 +1,55 @@
-# from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib import messages, auth
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, date
+
 from AtividadeApp.forms import FiltrosForm
-from services.defToExcel import gerarExcel
-from services.defToJson import gerarDict
+from AtividadeApp.services import exportar_excel, exportar_json
 
 
-dataInicio = 0
-dataFim = 0
-minCodColaborador = 0
-maxCodColaborador = 0
-Cliente = 0
-maxCliente = 0
-Atividade = 0
-maxAtividade = 0
-CentroCusto = 0
-maxCentroCusto = 0
+def _build_excel_response(wb) -> HttpResponse:
+    now = datetime.now()
+    filename = (
+        f"AtividadeIntegracoes{now.hour}{now.minute}{now.second}"
+        f" {now.day}-{now.month}-{now.year}.xlsx"
+    )
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+    wb.save(response)
+    return response
+
+
+def _form_filter_params(cleaned_data: dict) -> dict:
+    return {
+        "dataInicio": date.strftime(cleaned_data["dataInicio"], "%Y%m%d"),
+        "dataFim": date.strftime(cleaned_data["dataFim"], "%Y%m%d"),
+        "minCodColaborador": cleaned_data.get("minCodColaborador"),
+        "maxCodColaborador": cleaned_data.get("maxCodColaborador"),
+        "nomeCliente": cleaned_data.get("minCliente"),
+        "fimNomeCliente": cleaned_data.get("maxCliente"),
+        "atividade": cleaned_data.get("minAtividade"),
+        "fimAtividade": cleaned_data.get("maxAtividade"),
+        "centroCusto": cleaned_data.get("minCentroCusto"),
+        "fimCentroCusto": cleaned_data.get("maxCentroCusto"),
+    }
+
+
+def _api_filter_params(query_dict) -> dict:
+    today = datetime.now().date().strftime("%Y%m%d")
+    return {
+        "dataInicio": query_dict.get("dataInicio", today),
+        "dataFim": query_dict.get("dataFim", today),
+        "minCodColaborador": query_dict.get("minCodColaborador", 0),
+        "maxCodColaborador": query_dict.get("maxCodColaborador", 99),
+        "nomeCliente": query_dict.get("minCodCliente", 0),
+        "fimNomeCliente": query_dict.get("maxCodCliente", 0),
+        "atividade": query_dict.get("minAtividade", 0),
+        "fimAtividade": query_dict.get("maxAtividade", 0),
+        "centroCusto": query_dict.get("minCentroCusto", 0),
+        "fimCentroCusto": query_dict.get("maxCentroCusto", "Z" * 10),
+    }
 
 
 @login_required
@@ -28,40 +58,8 @@ def main(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         filtros_form = FiltrosForm(request.POST)
         if filtros_form.is_valid():
-            dados = filtros_form.cleaned_data
-            dataInicio: date = dados.get("dataInicio")  # type: ignore
-            dataFim: date = dados.get("dataFim")  # type: ignore
-            minCodColaborador: int | None = dados.get("minCodColaborador")
-            maxCodColaborador = dados.get("maxCodColaborador")
-            minCliente = dados.get("minCliente")
-            maxCliente = dados.get("maxCliente")
-            minAtividade = dados.get("minAtividade")
-            maxAtividade = dados.get("maxAtividade")
-            minCentroCusto = dados.get("minCentroCusto")
-            maxCentroCusto = dados.get("maxCentroCusto")
-
-            wb = gerarExcel(
-                date.strftime(dataInicio, "%Y%m%d"),
-                date.strftime(dataFim, "%Y%m%d"),
-                minCodColaborador,
-                maxCodColaborador,
-                minCliente,
-                maxCliente,
-                minAtividade,
-                maxAtividade,
-                minCentroCusto,
-                maxCentroCusto,
-            )
-            response = HttpResponse(content_type="application/ms-excel")
-
-            today = datetime.now()
-            responseContent = f"attachment; filename = AtividadeIntegracoes{today.hour}{today.minute}{today.second} {today.day}-{today.month}-{today.year}.xlsx"
-
-            response["Content-Disposition"] = responseContent
-
-            wb.save(response)  # type: ignore
-
-            return response
+            wb = exportar_excel(_form_filter_params(filtros_form.cleaned_data))
+            return _build_excel_response(wb)
 
     context = {"form": filtros_form, "site_title": "Lancamento de Horas"}
     return render(request, "AtividadeApp/base.html", context=context)
@@ -72,8 +70,7 @@ def login_view(request):
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            user = form.get_user()
-            auth.login(request, user)
+            auth.login(request, form.get_user())
             return redirect("main")
         messages.error(request, "Houve um erro no user ou na senha")
     context = {"form": form, "site_title": "Login "}
@@ -88,70 +85,5 @@ def logout_view(request):
 
 @login_required
 def api_get_data_view(request):
-    dataInicio = (
-        request.GET.get("dataInicio")
-        if request.GET.get("dataInicio") is not None
-        else datetime.now().date().strftime("%Y%m%d")
-    )
-    dataFim = (
-        request.GET.get("dataFim")
-        if request.GET.get("dataFim") is not None
-        else datetime.now().date().strftime("%Y%m%d")
-    )
-    minCodColaborador = (
-        request.GET.get("minCodColaborador")
-        if request.GET.get("minCodColaborador") is not None
-        else 0
-    )
-    maxCodColaborador = (
-        request.GET.get("maxCodColaborador")
-        if request.GET.get("maxCodColaborador") is not None
-        else 99
-    )
-    minCodCliente = (
-        request.GET.get("minCodCliente")
-        if request.GET.get("minCodCliente") is not None
-        else 0
-    )
-    maxCodCliente = (
-        request.GET.get("maxCodCliente")
-        if request.GET.get("maxCodCliente") is not None
-        else 0
-    )
-    minAtividade = (
-        request.GET.get("minAtividade")
-        if request.GET.get("minAtividade") is not None
-        else 0
-    )
-    maxAtividade = (
-        request.GET.get("maxAtividade")
-        if request.GET.get("maxAtividade") is not None
-        else 0
-    )
-    minCentroCusto = (
-        request.GET.get("minCentroCusto")
-        if request.GET.get("minCentroCusto") is not None
-        else 0
-    )
-    maxCentroCusto = (
-        request.GET.get("maxCentroCusto")
-        if request.GET.get("maxCentroCusto") is not None
-        else "Z" * 10
-    )
-
-    data = gerarDict(
-        dataInicio,
-        dataFim,
-        minCodColaborador,
-        maxCodColaborador,
-        minCodCliente,
-        maxCodCliente,
-        minAtividade,
-        maxAtividade,
-        minCentroCusto,
-        maxCentroCusto,
-    )
-
-    return JsonResponse(
-        data,
-    )
+    data = exportar_json(_api_filter_params(request.GET))
+    return JsonResponse(data)

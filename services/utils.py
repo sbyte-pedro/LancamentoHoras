@@ -1,13 +1,5 @@
-def passarParaDecimal(row):
-    hora: int = 0
-    minuto: float = 0.0
-    if len(row) == 4:
-        hora = int(row[0])
-        minuto: float = int(row[2:]) / 60
-    elif len(row) == 5:
-        hora = int(row[:2])
-        minuto = int(row[3:]) / 60
-    elif len(row) == 6:
-        hora = int(row[:3])
-        minuto = int(row[4:]) / 60
+def passarParaDecimal(row: str) -> float:
+    parts = row.split(":")
+    hora = int(parts[0])
+    minuto = int(parts[1]) / 60 if len(parts) > 1 else 0.0
     return hora + minuto

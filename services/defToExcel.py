@@ -181,6 +181,7 @@ def gerarExcel(
         ]
 
         for r in dataframe_to_rows(atividadeTrabalho, index=False, header=True):
+            # Skip rows carrying a known corrupt marker from the legacy Progress/4GL system
             if "nxp/nxbrw\x08ndi069.w" in r:
                 continue
             ws.append(r)
