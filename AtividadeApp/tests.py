@@ -129,7 +129,7 @@ class MainViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("form", response.context)
 
-    @patch("AtividadeApp.views.gerarExcel")
+    @patch("AtividadeApp.views.exportar_excel")
     def test_valid_post_triggers_excel_generation(self, mock_excel):
         mock_wb = MagicMock()
         mock_excel.return_value = mock_wb
@@ -153,8 +153,10 @@ class MainViewTests(TestCase):
 class ApiGetDataViewTests(TestCase):
     def setUp(self):
         self.client = Client()
+        user = User.objects.create_user(username="apiuser", password="pass1234")
+        self.client.login(username="apiuser", password="pass1234")
 
-    @patch("AtividadeApp.views.gerarDict")
+    @patch("AtividadeApp.views.exportar_json")
     def test_returns_json(self, mock_dict):
         mock_dict.return_value = {"atividades": []}
         response = self.client.get(reverse("getData"), {
@@ -163,7 +165,7 @@ class ApiGetDataViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/json")
 
-    @patch("AtividadeApp.views.gerarDict")
+    @patch("AtividadeApp.views.exportar_json")
     def test_defaults_applied_when_params_missing(self, mock_dict):
         mock_dict.return_value = {}
         self.client.get(reverse("getData"))

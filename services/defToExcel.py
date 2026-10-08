@@ -29,7 +29,8 @@ def transformaParaDf(ativTrabalho, columns) -> pd.DataFrame:
             ativTrabalhoDf.iloc[cont, 1] = datetime(1970, 1, 1)
             continue
         ativTrabalhoDf.iloc[cont, 1] = datetime(
-            1970, 1, 1, hour=int(hora[:2]), minute=int(hora[2:4]), second=int(hora[4:])
+            1970, 1, 1, hour=int(hora[:2]), minute=int(hora[2:4]),
+            second=int(hora[4:]) if len(hora) > 4 else 0
         )
 
     for cont, hora in enumerate(ativTrabalhoDf["HoraFim"]):
@@ -42,7 +43,8 @@ def transformaParaDf(ativTrabalho, columns) -> pd.DataFrame:
             )
             continue
         ativTrabalhoDf.iloc[cont, 2] = datetime(
-            1970, 1, 1, hour=int(hora[:2]), minute=int(hora[2:4]), second=int(hora[4:])
+            1970, 1, 1, hour=int(hora[:2]), minute=int(hora[2:4]),
+            second=int(hora[4:]) if len(hora) > 4 else 0
         )
 
     ativTrabalhoDf["Qtde Horas"] = (
