@@ -92,7 +92,7 @@
           {% for entry in entries %}
           <tr class="{% if entry.suspicious %}entry-suspicious{% elif entry.baseline_status == 'insuficiente' %}entry-thin{% endif %}">
             <td>{{ entry.Data }}</td>
-            <td title="{{ entry.reason|default:'' }}">
+            <td title="{% if entry.suspicious %}{{ entry.reason }}{% elif entry.baseline_status == 'insuficiente' %}Baseline insuficiente (menos de 20 registros nos últimos 12 meses){% endif %}">
               {{ entry.Colaborador }}
               {% if entry.suspicious %} 🔴{% endif %}
               {% if entry.baseline_status == 'insuficiente' %} ⚠️{% endif %}

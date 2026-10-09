@@ -70,6 +70,30 @@ class InsightViewTests(TestCase):
         self.assertContains(response, "Suspeitos: 0")
         self.assertContains(response, "Sem baseline: 1")
 
+    def test_thin_baseline_entry_renders_warning_tooltip(self):
+        self.client.login(username="testuser", password="testpass123")
+        thin_entries = [{
+            "Data": "20261001", "HoraInicio": "08:00", "HoraFim": "17:00",
+            "CodColaborador": 1, "Colaborador": "João Silva",
+            "NomeCliente": "ClienteA", "DescricaoAtividade": "Dev",
+            "CentroCusto": "CC-01", "Observacao1": "", "Observacao2": "",
+            "suspicious": False, "reason": None, "baseline_status": "insuficiente",
+        }]
+        with patch("InsightApp.views.query_insight_entries") as mock_q, \
+             patch("InsightApp.views.flag_outliers", return_value=thin_entries):
+            mock_q.return_value = (
+                (("20261001", "08:00", "17:00", 1, "João", "ClienteA", "Dev", "CC-01", "", ""),),
+                COLUMNS,
+            )
+            response = self.client.post("/insights/", {
+                "dataInicio": "2026-10-01",
+                "dataFim": "2026-10-31",
+            })
+        self.assertContains(
+            response,
+            'title="Baseline insuficiente (menos de 20 registros nos últimos 12 meses)"',
+        )
+
     def test_suspicious_entry_renders_red_flag_and_css_class(self):
         self.client.login(username="testuser", password="testpass123")
         suspicious_entries = [{
