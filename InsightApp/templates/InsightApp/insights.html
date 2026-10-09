@@ -1,0 +1,118 @@
+{% include "AtividadeApp/partials/_head.html" %}
+<body>
+<div class="login-container">
+  <div class="login-card" style="max-width: 98vw; width: 100%;">
+
+    <style>
+      .insight-filter-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-top: 0.5rem; }
+      .insight-filter-group { display: flex; flex-direction: column; gap: 0.25rem; }
+      .insight-filter-group label { font-size: 0.8rem; font-weight: 600; color: #34495e; text-transform: uppercase; letter-spacing: 0.5px; }
+      .insight-filter-group input { padding: 0.6rem 0.8rem; border: 1px solid #d1d8e0; border-radius: 6px; font-size: 0.95rem; font-family: inherit; }
+      .insight-submit { padding: 0.65rem 1.5rem; background: #1976D2; color: #fff; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; align-self: flex-end; text-transform: uppercase; letter-spacing: 0.4px; }
+      .insight-submit:hover { background: #1565C0; }
+      .summary-strip { margin: 1rem 0 0.5rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+      .badge { padding: 0.2rem 0.7rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
+      .badge-gray { background: #6c757d; color: #fff; }
+      .badge-red { background: #dc3545; color: #fff; }
+      .badge-yellow { background: #ffc107; color: #333; }
+      .insight-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.88rem; }
+      .insight-table th { background: #f5f7fa; padding: 0.45rem 0.7rem; text-align: left; border-bottom: 2px solid #d1d8e0; white-space: nowrap; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px; color: #34495e; }
+      .insight-table td { padding: 0.4rem 0.7rem; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+      .entry-suspicious { background: #fff5f5; }
+      .entry-suspicious td:first-child { border-left: 4px solid #dc3545; }
+      .entry-thin { background: #fffbf0; }
+      .entry-thin td:first-child { border-left: 4px solid #ffc107; }
+      .insight-table tr:hover { background: #f8f9fa; }
+      .entry-suspicious:hover { background: #ffe8e8; }
+      .entry-thin:hover { background: #fff3cd; }
+      .no-results { color: #6c757d; margin-top: 1rem; font-style: italic; }
+    </style>
+
+    <div class="page-title"><h2>Insights de Lançamentos</h2></div>
+
+    <div class="user-message">
+      <span>Olá, <strong>{{ user.username }}</strong>!
+        <a href="{% url 'logout' %}"><strong>Trocar de conta</strong></a></span>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-field">
+        {{ form.nl_query.label_tag }}
+        {{ form.nl_query }}
+      </div>
+      <div class="insight-filter-row">
+        <div class="insight-filter-group">
+          {{ form.dataInicio.label_tag }}
+          {{ form.dataInicio }}
+        </div>
+        <div class="insight-filter-group">
+          {{ form.dataFim.label_tag }}
+          {{ form.dataFim }}
+        </div>
+        <div class="insight-filter-group">
+          {{ form.nomeColaborador.label_tag }}
+          {{ form.nomeColaborador }}
+        </div>
+        <div class="insight-filter-group">
+          {{ form.nomeCliente.label_tag }}
+          {{ form.nomeCliente }}
+        </div>
+        <button type="submit" class="insight-submit">Buscar</button>
+      </div>
+      {% if form.errors %}
+        <div class="message error" style="margin-top:0.5rem;">{{ form.errors }}</div>
+      {% endif %}
+    </form>
+
+    {% if summary %}
+    <div class="summary-strip">
+      <span class="badge badge-gray">Total: {{ summary.total }}</span>
+      <span class="badge badge-red">Suspeitos: {{ summary.suspicious }}</span>
+      <span class="badge badge-yellow">Sem baseline: {{ summary.thin_baseline }}</span>
+    </div>
+    {% endif %}
+
+    {% if entries %}
+    <div style="overflow-x: auto;">
+      <table class="insight-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Colaborador</th>
+            <th>Cliente</th>
+            <th>Atividade</th>
+            <th>Centro Custo</th>
+            <th>Início</th>
+            <th>Fim</th>
+            <th>Observação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in entries %}
+          <tr class="{% if entry.suspicious %}entry-suspicious{% elif entry.baseline_status == 'insuficiente' %}entry-thin{% endif %}">
+            <td>{{ entry.Data }}</td>
+            <td title="{{ entry.reason|default:'' }}">
+              {{ entry.Colaborador }}
+              {% if entry.suspicious %} 🔴{% endif %}
+              {% if entry.baseline_status == 'insuficiente' %} ⚠️{% endif %}
+            </td>
+            <td>{{ entry.NomeCliente }}</td>
+            <td>{{ entry.DescricaoAtividade }}</td>
+            <td>{{ entry.CentroCusto }}</td>
+            <td>{{ entry.HoraInicio }}</td>
+            <td>{{ entry.HoraFim }}</td>
+            <td>{{ entry.Observacao1 }}{% if entry.Observacao2 %} / {{ entry.Observacao2 }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% elif summary %}
+      <p class="no-results">Nenhum registro encontrado para o período selecionado.</p>
+    {% endif %}
+
+  </div>
+</div>
+</body>
+</html>
