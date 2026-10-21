@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from AtividadeApp import views
 
 
@@ -26,4 +26,5 @@ urlpatterns = [
     path("auth/login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("api/backOfficeData", views.api_get_data_view, name="getData"),
+    path("", include("InsightApp.urls")),
 ]
